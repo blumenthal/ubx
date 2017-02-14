@@ -156,20 +156,21 @@ int zyre_bridge_init(ubx_block_t *b)
         inf->node = node;
 
         int rc;
-        //char *loc_ep;
+        char *loc_ep;
         char *gos_ep;
         ///TODO: remove superfluous local endpoint
-        //loc_ep = (char*) ubx_config_get_data_ptr(b, "local_endpoint", &tmplen);
+        loc_ep = (char*) ubx_config_get_data_ptr(b, "local_endpoint", &tmplen);
         gos_ep = (char*) ubx_config_get_data_ptr(b, "gossip_endpoint", &tmplen);
         //printf("local and gossip endpoint for block %s is %s and %s\n", b->name, loc_ep, gos_ep);
-		//rc = zyre_set_endpoint (node, "%s",loc_ep);
-		//assert (rc == 0);
+		rc = zyre_set_endpoint (node, "%s", loc_ep);
+		assert (rc == 0);
         // check if zyre or gossip shall be used
         ubx_data_t *tmp;
         tmp = ubx_config_get_data(b, "gossip_flag");
         int gossip_flag;
         gossip_flag = *(int*) tmp->data;
         if (gossip_flag == 1){
+
         	//  Set up gossip network for this node
 			ubx_data_t *dmy;
 			dmy = ubx_config_get_data(b, "bind");
