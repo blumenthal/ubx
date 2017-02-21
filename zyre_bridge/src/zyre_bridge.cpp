@@ -64,17 +64,17 @@ char* send_request(const char *uid, const char *local_req, json_t *recipients, i
 	}
     json_t *root;
     root = json_object();
-    json_object_set(root, "metamodel", json_string("sherpa_mgs"));
-    json_object_set(root, "model", json_string("http://kul/send_request.json"));
-    json_object_set(root, "type", json_string("send_request"));
+    json_object_set_new(root, "metamodel", json_string("sherpa_mgs"));
+    json_object_set_new(root, "model", json_string("http://kul/send_request.json"));
+    json_object_set_new(root, "type", json_string("send_request"));
     json_t *payload;
     payload = json_object();
-    json_object_set(payload, "UID", json_string(uid));
-    json_object_set(payload, "local_requester", json_string(local_req));
-    json_object_set(payload, "recipients", recipients);
-    json_object_set(payload, "timeout", json_integer(timeout));
-    json_object_set(payload, "payload_type", json_string(payload_type));
-    json_object_set(payload, "payload", msg_payload);
+    json_object_set_new(payload, "UID", json_string(uid));
+    json_object_set_new(payload, "local_requester", json_string(local_req));
+    json_object_set_new(payload, "recipients", recipients);
+    json_object_set_new(payload, "timeout", json_integer(timeout));
+    json_object_set_new(payload, "payload_type", json_string(payload_type));
+    json_object_set_new(payload, "payload", msg_payload);
     json_object_set(root, "payload", payload);
     char* ret = json_dumps(root, JSON_ENCODE_ANY);
     json_decref(root);
@@ -350,6 +350,8 @@ void zyre_bridge_step(ubx_block_t *b)
 
     	json_decref(pl);
     	json_decref(new_msg);
+    	free(send_msg);
+
     }
 
     free(tmp_str);
@@ -440,6 +442,7 @@ zyre_bridge_actor (zsock_t *pipe, void *args)
 					} else {
 						ERR("Error parsing JSON string! Does not conform to msg model.\n");
 					}
+					json_decref(m);
 				}
 				free (group);
 				free (message);
