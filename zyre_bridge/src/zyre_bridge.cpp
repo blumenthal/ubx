@@ -296,7 +296,7 @@ void zyre_bridge_step(ubx_block_t *b)
 		json_t *new_msg;
 		new_msg = json_object();
 		json_object_set(new_msg, "payload", pl);
-		json_object_set(new_msg, "metamodel", json_string("SHERPA"));
+		json_object_set_new(new_msg, "metamodel", json_string("SHERPA"));
 		if(json_object_get(pl, "@worldmodeltype") == 0) {
 			DBG("[zyrebridge] retrieving msg: %s\n", json_dumps(pl, JSON_ENCODE_ANY));
 			ERR("[zyrebridge] Error parsing RSG payload! @worldmodeltype is missing.\n");
@@ -333,8 +333,8 @@ void zyre_bridge_step(ubx_block_t *b)
 						send_msg = json_dumps(new_msg, JSON_ENCODE_ANY);
 					}
 				} else {
-					json_object_set(new_msg, "model", json_string(tmp_type.c_str()));
-					json_object_set(new_msg, "type", json_string(tmp_type.c_str()));
+					json_object_set_new(new_msg, "model", json_string(tmp_type.c_str()));
+					json_object_set_new(new_msg, "type", json_string(tmp_type.c_str()));
 					send_msg = json_dumps(new_msg, JSON_ENCODE_ANY);
 				}
 				break;
