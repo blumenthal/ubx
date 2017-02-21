@@ -55,11 +55,11 @@ char* send_request(const char *uid, const char *local_req, json_t *recipients, i
 	 */
 
 	if (!json_is_array(recipients)) {
-		printf("ERROR: Recipients are not a json array! \n");
+		ERR("ERROR: Recipients are not a json array! \n");
 		return NULL;
 	}
 	if (!json_is_object(msg_payload)) {
-		printf("ERROR: Payload is not a json object! \n");
+		ERR("ERROR: Payload is not a json object! \n");
 		return NULL;
 	}
     json_t *root;
@@ -286,7 +286,7 @@ void zyre_bridge_step(ubx_block_t *b)
 		json_error_t error;
 		pl= json_loads(tmp_str,0,&error);
 		if(!pl) {
-			printf("Error parsing JSON payload! line %d: %s\n", error.line, error.text);
+			ERR("Error parsing JSON payload! line %d: %s\n", error.line, error.text);
 			json_decref(pl);
 			free(tmp_str);
 			return;
@@ -298,8 +298,8 @@ void zyre_bridge_step(ubx_block_t *b)
 		json_object_set(new_msg, "payload", pl);
 		json_object_set(new_msg, "metamodel", json_string("SHERPA"));
 		if(json_object_get(pl, "@worldmodeltype") == 0) {
-			printf("[zyrebridge] retrieving msg: %s\n", json_dumps(pl, JSON_ENCODE_ANY));
-			printf("[zyrebridge] Error parsing RSG payload! @worldmodeltype is missing.\n");
+			DBG("[zyrebridge] retrieving msg: %s\n", json_dumps(pl, JSON_ENCODE_ANY));
+			ERR("[zyrebridge] Error parsing RSG payload! @worldmodeltype is missing.\n");
 			json_decref(pl);
 			free(tmp_str);
 			return;
@@ -341,10 +341,10 @@ void zyre_bridge_step(ubx_block_t *b)
 			}
 		}
 		if (found == 0) {
-			printf("[zyre_bridge] WARNING: Unknown output type: %s!\n",tmp_type.c_str());
+			DBG("[zyre_bridge] WARNING: Unknown output type: %s!\n",tmp_type.c_str());
 		}
 
-		printf("[zyrebridge] sending msg: %s\n", send_msg);
+		DBG("[zyrebridge] sending msg: %s\n", send_msg);
     	zyre_shouts(inf->node, inf->group, "%s", send_msg);
     	counter++;
 
@@ -404,7 +404,7 @@ zyre_bridge_actor (zsock_t *pipe, void *args)
 				printf ("[zyre_bridge]: %s has exited\n", name);
 			else
 			if (streq (event, "SHOUT")) {
-				printf ("[zyre_bridge]: SHOUT received from %s.\n", name);
+				DBG ("[zyre_bridge]: SHOUT received from %s.\n", name);
 
 				char *group = zmsg_popstr (msg);
 				char *message = zmsg_popstr (msg);
@@ -414,14 +414,14 @@ zyre_bridge_actor (zsock_t *pipe, void *args)
 				json_error_t error;
 				m= json_loads(message,0,&error);
 				if(!m) {
-					printf("Error parsing JSON payload! line %d: %s\n", error.line, error.text);
+					ERR("Error parsing JSON payload! line %d: %s\n", error.line, error.text);
 					json_decref(m);
 				} else {
-					printf("%s\n",message);
+					DBG("%s\n",message);
 					if (json_object_get(m, "type")) {
 						std::string type = json_dumps(json_object_get(m, "type"), JSON_ENCODE_ANY);
 						type = type.substr(1, type.size()-2); // get rid of " characters
-						printf("type: %s\n",json_dumps(json_object_get(m, "type"), JSON_ENCODE_ANY));
+						DBG("type: %s\n",json_dumps(json_object_get(m, "type"), JSON_ENCODE_ANY));
 
 						for (int i=0; i < inf->input_type_list.size();i++)
 						{
@@ -431,14 +431,14 @@ zyre_bridge_actor (zsock_t *pipe, void *args)
 								ubx_type_t* type =  ubx_type_get(b->ni, "unsigned char");
 								ubx_data_t ubx_msg;
 								ubx_msg.data = (void *)json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY);
-								printf("message: %s\n",json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY));
+								DBG("message: %s\n",json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY));
 								ubx_msg.len = strlen(json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY));
 								ubx_msg.type = type;
 								__port_write(inf->ports.zyre_in, &ubx_msg);
 							}
 						}
 					} else {
-						printf("Error parsing JSON string! Does not conform to msg model.\n");
+						ERR("Error parsing JSON string! Does not conform to msg model.\n");
 					}
 				}
 				free (group);
