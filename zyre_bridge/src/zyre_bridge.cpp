@@ -74,8 +74,8 @@ char* send_request(const char *uid, const char *local_req, json_t *recipients, i
     json_object_set_new(payload, "recipients", recipients);
     json_object_set_new(payload, "timeout", json_integer(timeout));
     json_object_set_new(payload, "payload_type", json_string(payload_type));
-    json_object_set_new(payload, "payload", msg_payload);
-    json_object_set(root, "payload", payload);
+    json_object_set(payload, "payload", msg_payload);
+    json_object_set_new(root, "payload", payload);
     char* ret = json_dumps(root, JSON_ENCODE_ANY);
     json_decref(root);
     return ret;
@@ -432,11 +432,13 @@ zyre_bridge_actor (zsock_t *pipe, void *args)
 							if (inf->input_type_list[i].compare(type) == 0) {
 								ubx_type_t* type =  ubx_type_get(b->ni, "unsigned char");
 								ubx_data_t ubx_msg;
-								ubx_msg.data = (void *)json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY);
-								DBG("message: %s\n",json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY));
-								ubx_msg.len = strlen(json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY));
+								char * payload =  json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY);
+								ubx_msg.data = (void *)payload;
+								DBG("message: %s\n", payload);
+								ubx_msg.len = strlen(payload);
 								ubx_msg.type = type;
 								__port_write(inf->ports.zyre_in, &ubx_msg);
+								free(payload);
 							}
 						}
 					} else {
