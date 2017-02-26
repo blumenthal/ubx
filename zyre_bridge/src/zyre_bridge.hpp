@@ -31,19 +31,22 @@ ubx_config_t zyre_bridge_config[] = {
 		{ .name="gossip_flag", .type_name = "int", .doc="1 for using gossip locally; 0 for using a global zyre network" },
 		{ .name="max_msg_length", .type_name = "int", .doc="max length of msg coming from RSG" },
 		{ .name="mediator", .type_name = "int", .doc="1 for using the mediator, 0 for using without" },
+		{ .name="enable_update_port", .type_name = "int", .doc="1 using the update port i.e. global updates will be filtered and written to another port; 0 for using without" },
 		{ NULL },
 };
 
 /* declaration port block ports */
 ubx_port_t zyre_bridge_ports[] = {
         { .name="zyre_in", .out_type_name="unsigned char", .doc="Received msg from zyre."  },
-		{ .name="zyre_out", .in_type_name="unsigned char", .doc="Sends zyre msg."  },
+        { .name="zyre_in_global_updates", .out_type_name="unsigned char", .doc="Received RSGUpadte_local messages from zyre. If activated, they will not appear in the zyre_in port."  },
+        { .name="zyre_out", .in_type_name="unsigned char", .doc="Sends zyre msg."  },
 		{ NULL },
 };
 
 /* declare a struct port_cache */
 struct zyre_bridge_port_cache {
         ubx_port_t* zyre_in;
+        ubx_port_t* zyre_in_global_updates;
         ubx_port_t* zyre_out;
 };
 
@@ -55,6 +58,7 @@ struct zyre_bridge_port_cache {
 static void update_port_cache(ubx_block_t *b, struct zyre_bridge_port_cache *pc)
 {
         pc->zyre_in = ubx_port_get(b, "zyre_in");
+        pc->zyre_in_global_updates = ubx_port_get(b, "zyre_in_global_updates");
         pc->zyre_out = ubx_port_get(b, "zyre_out");
 }
 

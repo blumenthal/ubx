@@ -425,19 +425,29 @@ zyre_bridge_actor (zsock_t *pipe, void *args)
 						type = type.substr(1, type.size()-2); // get rid of " characters
 						DBG("type: %s\n",json_dumps(json_object_get(m, "type"), JSON_ENCODE_ANY));
 
+						//  Option: fiter global updated or not
+						ubx_data_t *dmy;
+						dmy = ubx_config_get_data(b, "enable_update_port");
+						int enable_update_port = *(int*) dmy->data;
+
 						for (int i=0; i < inf->input_type_list.size();i++)
 						{
 							//if (json_string_value(json_object_get(m, "type")) == inf->input_type_list[i]){
 							//printf("type list, type : %s, %s \n", inf->input_type_list[i].c_str(), type.c_str());
 							if (inf->input_type_list[i].compare(type) == 0) {
-								ubx_type_t* type =  ubx_type_get(b->ni, "unsigned char");
+								ubx_type_t* ubx_type =  ubx_type_get(b->ni, "unsigned char");
 								ubx_data_t ubx_msg;
 								char * payload =  json_dumps(json_object_get(m, "payload"), JSON_ENCODE_ANY);
 								ubx_msg.data = (void *)payload;
 								DBG("message: %s\n", payload);
 								ubx_msg.len = strlen(payload);
-								ubx_msg.type = type;
-								__port_write(inf->ports.zyre_in, &ubx_msg);
+								ubx_msg.type = ubx_type;
+								if((type.compare("RSGUpdate_global") == 0) && (enable_update_port == 1)) {
+									DBG("Formarding to zyre_in_global_updates port.");
+									__port_write(inf->ports.zyre_in_global_updates, &ubx_msg);
+								} else {
+									__port_write(inf->ports.zyre_in, &ubx_msg);
+								}
 								free(payload);
 							}
 						}
